@@ -1,6 +1,6 @@
 # renfield-mcp-weather
 
-A Python MCP (Model Context Protocol) server that provides weather data from the Open-Meteo API with a clean, LLM-friendly interface.
+A Python MCP (Model Context Protocol) server that provides weather data from the Open-Meteo API. It is based on the npm package `open-meteo-mcp-server` with an additional functionality for geocode lookups that makes it easier for small, local models to access data.
 
 ## Key Features
 
@@ -183,7 +183,12 @@ pytest tests/ -v
 ruff check src/
 ruff format src/
 ```
+## Reference
 
+- Open-Meteo API Docs: https://open-meteo.com/en/docs
+- MCP SDK: https://github.com/modelcontextprotocol/python-sdk
+- FastMCP: https://github.com/jlowin/fastmcp
+- npm package `open-meteo-mcp-server`  https://github.com/cmer81/open-meteo-mcp
 ## License
 
 MIT
