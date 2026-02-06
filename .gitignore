@@ -1,0 +1,75 @@
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Claude
+.claude
+CLAUDE.md
+# Backups
+backups
+REQUIREMENTS.md
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.env
+.venv
+venv/
+ENV/
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Frontend build
+frontend/dist/
+src/frontend/dist/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Logs
+*.log
+logs/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Database
+*.sqlite
+*.db
+
+# Private documents (not for repo)
+docs/private/
+
+# Secrets (should use .env)
+*.pem
+*.key
+secrets/
+
+# Coverage
+coverage/
+*.lcov
+
+# Test screenshots (ephemeral browser test artifacts)
+test-screenshots/
+
+# Local task management
+tasks/
