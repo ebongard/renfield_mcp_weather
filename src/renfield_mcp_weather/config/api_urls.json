@@ -1,0 +1,19 @@
+{
+  "forecast": "https://api.open-meteo.com/v1/forecast",
+  "archive": "https://archive-api.open-meteo.com/v1/archive",
+  "air_quality": "https://air-quality-api.open-meteo.com/v1/air-quality",
+  "marine": "https://marine-api.open-meteo.com/v1/marine",
+  "flood": "https://flood-api.open-meteo.com/v1/flood",
+  "seasonal": "https://seasonal-api.open-meteo.com/v1/seasonal",
+  "ensemble": "https://ensemble-api.open-meteo.com/v1/ensemble",
+  "climate": "https://climate-api.open-meteo.com/v1/climate",
+  "elevation": "https://api.open-meteo.com/v1/elevation",
+  "geocoding": "https://geocoding-api.open-meteo.com/v1/search",
+  "dwd_icon": "https://api.open-meteo.com/v1/dwd-icon",
+  "gfs": "https://api.open-meteo.com/v1/gfs",
+  "meteofrance": "https://api.open-meteo.com/v1/meteofrance",
+  "ecmwf": "https://api.open-meteo.com/v1/ecmwf",
+  "jma": "https://api.open-meteo.com/v1/jma",
+  "metno": "https://api.open-meteo.com/v1/metno",
+  "gem": "https://api.open-meteo.com/v1/gem"
+}

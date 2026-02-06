@@ -8,11 +8,14 @@ import os
 
 import httpx
 
-GEOCODING_URL = os.environ.get(
-    "OPEN_METEO_GEOCODING_URL",
-    "https://geocoding-api.open-meteo.com/v1/search"
-)
+from .config import get_api_url
+
 DEFAULT_LANGUAGE = os.environ.get("OPEN_METEO_LANGUAGE", "de")
+
+
+def _get_geocoding_url() -> str:
+    """Get geocoding API URL from config."""
+    return get_api_url("geocoding")
 
 
 async def geocode(location: str, language: str = DEFAULT_LANGUAGE) -> dict:
@@ -39,7 +42,7 @@ async def geocode(location: str, language: str = DEFAULT_LANGUAGE) -> dict:
     async with httpx.AsyncClient(timeout=10.0) as client:
         # First attempt: direct search
         resp = await client.get(
-            GEOCODING_URL,
+            _get_geocoding_url(),
             params={"name": location, "count": 5, "language": language}
         )
         resp.raise_for_status()
@@ -48,7 +51,7 @@ async def geocode(location: str, language: str = DEFAULT_LANGUAGE) -> dict:
         if not results:
             # Fallback: try with German country code (for villages)
             resp = await client.get(
-                GEOCODING_URL,
+                _get_geocoding_url(),
                 params={"name": location, "count": 5, "language": language, "country_code": "DE"}
             )
             resp.raise_for_status()

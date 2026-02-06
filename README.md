@@ -156,12 +156,48 @@ Responses are compact and LLM-friendly:
 }
 ```
 
+## Configuration
+
+All configuration is externalized in JSON files - no code changes required.
+
+### API URLs
+
+API endpoints are configured in `config/api_urls.json`. Override without rebuilding:
+
+**Option 1: Custom config file**
+```bash
+export OPEN_METEO_CONFIG_FILE=/path/to/custom/api_urls.json
+```
+
+**Option 2: Individual URL overrides**
+```bash
+export OPEN_METEO_API_URL_FORECAST=https://my-instance.com/v1/forecast
+export OPEN_METEO_API_URL_GEOCODING=https://my-instance.com/v1/search
+```
+
+**Config file format (`api_urls.json`):**
+```json
+{
+  "forecast": "https://api.open-meteo.com/v1/forecast",
+  "archive": "https://archive-api.open-meteo.com/v1/archive",
+  "air_quality": "https://air-quality-api.open-meteo.com/v1/air-quality",
+  "geocoding": "https://geocoding-api.open-meteo.com/v1/search",
+  "dwd_icon": "https://api.open-meteo.com/v1/dwd-icon"
+}
+```
+
 ## Environment Variables
 
 ```bash
-# Override API base URLs (for self-hosted instances)
+# Custom API config file
+OPEN_METEO_CONFIG_FILE=/path/to/api_urls.json
+
+# Individual API URL overrides
+OPEN_METEO_API_URL_FORECAST=https://custom.api/v1/forecast
+OPEN_METEO_API_URL_GEOCODING=https://custom.api/v1/search
+
+# Legacy: Override base URL for main APIs
 OPEN_METEO_API_URL=https://api.open-meteo.com
-OPEN_METEO_GEOCODING_URL=https://geocoding-api.open-meteo.com
 
 # Default language for all tools
 OPEN_METEO_LANGUAGE=de

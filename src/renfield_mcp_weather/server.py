@@ -9,17 +9,16 @@ See REQUIREMENTS.md for full specification.
 """
 
 import logging
-import os
 import sys
 
 import httpx
 from mcp.server.fastmcp import FastMCP
 
+from .config import get_api_url
 from .geocoding import geocode
 from .locales import (
     DEFAULT_LANGUAGE,
     get_error_message,
-    get_supported_languages,
     get_weather_description,
 )
 
@@ -33,29 +32,6 @@ logger = logging.getLogger("renfield-mcp-weather")
 
 # === MCP Server ===
 mcp = FastMCP("renfield-weather")
-
-
-# === API Base URLs ===
-API_BASE = os.environ.get("OPEN_METEO_API_URL", "https://api.open-meteo.com")
-
-API_URLS = {
-    "forecast": f"{API_BASE}/v1/forecast",
-    "archive": "https://archive-api.open-meteo.com/v1/archive",
-    "air_quality": "https://air-quality-api.open-meteo.com/v1/air-quality",
-    "marine": "https://marine-api.open-meteo.com/v1/marine",
-    "flood": "https://flood-api.open-meteo.com/v1/flood",
-    "seasonal": "https://seasonal-api.open-meteo.com/v1/seasonal",
-    "ensemble": "https://ensemble-api.open-meteo.com/v1/ensemble",
-    "climate": "https://climate-api.open-meteo.com/v1/climate",
-    "elevation": f"{API_BASE}/v1/elevation",
-    "dwd_icon": f"{API_BASE}/v1/dwd-icon",
-    "gfs": f"{API_BASE}/v1/gfs",
-    "meteofrance": f"{API_BASE}/v1/meteofrance",
-    "ecmwf": f"{API_BASE}/v1/ecmwf",
-    "jma": f"{API_BASE}/v1/jma",
-    "metno": f"{API_BASE}/v1/metno",
-    "gem": f"{API_BASE}/v1/gem",
-}
 
 # HTTP client timeout
 HTTP_TIMEOUT = 15.0
@@ -263,7 +239,7 @@ async def get_weather(
         params["hourly"] = hourly
 
     try:
-        data = await fetch_api(API_URLS["forecast"], params)
+        data = await fetch_api(get_api_url("forecast"), params)
     except Exception as e:
         return await handle_api_error(e)
 
@@ -343,7 +319,7 @@ async def get_weather_archive(
         params["hourly"] = hourly
 
     try:
-        data = await fetch_api(API_URLS["archive"], params)
+        data = await fetch_api(get_api_url("archive"), params)
     except Exception as e:
         return await handle_api_error(e)
 
@@ -410,7 +386,7 @@ async def get_air_quality(
         params["hourly"] = ["pm10", "pm2_5", "european_aqi", "ozone", "nitrogen_dioxide"]
 
     try:
-        data = await fetch_api(API_URLS["air_quality"], params)
+        data = await fetch_api(get_api_url("air_quality"), params)
     except Exception as e:
         return await handle_api_error(e)
 
@@ -481,7 +457,7 @@ async def get_marine_weather(
         params["daily"] = ["wave_height_max", "wave_direction_dominant", "wave_period_max"]
 
     try:
-        data = await fetch_api(API_URLS["marine"], params)
+        data = await fetch_api(get_api_url("marine"), params)
     except Exception as e:
         return await handle_api_error(e)
 
@@ -521,7 +497,7 @@ async def get_elevation(location: str, language: str = "de") -> dict:
     }
 
     try:
-        data = await fetch_api(API_URLS["elevation"], params)
+        data = await fetch_api(get_api_url("elevation"), params)
     except Exception as e:
         return await handle_api_error(e)
 
@@ -676,7 +652,7 @@ async def get_dwd_icon(
         Weather forecast from DWD ICON model
     """
     return await fetch_model_weather(
-        location, API_URLS["dwd_icon"], "DWD ICON",
+        location, get_api_url("dwd_icon"), "DWD ICON",
         days, hourly, daily, current, timezone, temperature_unit,
         language=language
     )
@@ -710,7 +686,7 @@ async def get_gfs(
         Weather forecast from NOAA GFS model
     """
     return await fetch_model_weather(
-        location, API_URLS["gfs"], "NOAA GFS",
+        location, get_api_url("gfs"), "NOAA GFS",
         days, hourly, daily, current, timezone, temperature_unit,
         language=language
     )
@@ -744,7 +720,7 @@ async def get_meteofrance(
         Weather forecast from Météo-France model
     """
     return await fetch_model_weather(
-        location, API_URLS["meteofrance"], "Météo-France",
+        location, get_api_url("meteofrance"), "Météo-France",
         days, hourly, daily, current, timezone, temperature_unit,
         language=language
     )
@@ -778,7 +754,7 @@ async def get_ecmwf(
         Weather forecast from ECMWF model
     """
     return await fetch_model_weather(
-        location, API_URLS["ecmwf"], "ECMWF",
+        location, get_api_url("ecmwf"), "ECMWF",
         days, hourly, daily, current, timezone, temperature_unit,
         language=language
     )
@@ -812,7 +788,7 @@ async def get_jma(
         Weather forecast from JMA model
     """
     return await fetch_model_weather(
-        location, API_URLS["jma"], "JMA",
+        location, get_api_url("jma"), "JMA",
         days, hourly, daily, current, timezone, temperature_unit,
         language=language
     )
@@ -846,7 +822,7 @@ async def get_metno(
         Weather forecast from MET Norway model
     """
     return await fetch_model_weather(
-        location, API_URLS["metno"], "MET Norway",
+        location, get_api_url("metno"), "MET Norway",
         days, hourly, daily, current, timezone, temperature_unit,
         language=language
     )
@@ -880,7 +856,7 @@ async def get_gem(
         Weather forecast from Environment Canada GEM model
     """
     return await fetch_model_weather(
-        location, API_URLS["gem"], "Environment Canada GEM",
+        location, get_api_url("gem"), "Environment Canada GEM",
         days, hourly, daily, current, timezone, temperature_unit,
         language=language
     )
@@ -925,7 +901,7 @@ async def get_flood_forecast(
         params["daily"] = ["river_discharge", "river_discharge_max", "river_discharge_min"]
 
     try:
-        data = await fetch_api(API_URLS["flood"], params)
+        data = await fetch_api(get_api_url("flood"), params)
     except Exception as e:
         return await handle_api_error(e)
 
@@ -980,7 +956,7 @@ async def get_seasonal_forecast(
         params["sixhourly"] = ["temperature_2m", "precipitation"]
 
     try:
-        data = await fetch_api(API_URLS["seasonal"], params)
+        data = await fetch_api(get_api_url("seasonal"), params)
     except Exception as e:
         return await handle_api_error(e)
 
@@ -1051,7 +1027,7 @@ async def get_climate_projection(
         ]
 
     try:
-        data = await fetch_api(API_URLS["climate"], params)
+        data = await fetch_api(get_api_url("climate"), params)
     except Exception as e:
         return await handle_api_error(e)
 
@@ -1117,7 +1093,7 @@ async def get_ensemble_forecast(
         params["hourly"] = ["temperature_2m", "precipitation"]
 
     try:
-        data = await fetch_api(API_URLS["ensemble"], params)
+        data = await fetch_api(get_api_url("ensemble"), params)
     except Exception as e:
         return await handle_api_error(e)
 
