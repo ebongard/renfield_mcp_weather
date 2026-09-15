@@ -149,10 +149,32 @@ async def handle_location_error(location: str, language: str = DEFAULT_LANGUAGE)
     }
 
 
+def _retry_after_seconds(value: str | None) -> int | float | None:
+    """Seconds from a Retry-After header. The HTTP-date form is omitted, not guessed —
+    turning it into seconds would mean clock arithmetic across skew."""
+    try:
+        seconds = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not 0 < seconds < 1_000_000:
+        return None
+    return int(seconds) if seconds.is_integer() else seconds
+
+
 async def handle_api_error(error: Exception) -> dict:
     """Return error response for API errors."""
     if isinstance(error, httpx.HTTPStatusError):
-        return {"error": f"Weather API error: {error.response.status_code}"}
+        status = error.response.status_code
+        if status == 429:
+            # A throttle is structured, not prose: a client can tell it from any other
+            # error by "status" alone (a bare "429" in text may be a postcode) and back
+            # off for "retry_after" seconds when the upstream said how long.
+            result = {"error": "Weather API rate limit (HTTP 429)", "status": 429}
+            retry_after = _retry_after_seconds(error.response.headers.get("retry-after"))
+            if retry_after is not None:
+                result["retry_after"] = retry_after
+            return result
+        return {"error": f"Weather API error: {status}"}
     elif isinstance(error, httpx.TimeoutException):
         return {"error": "Weather API timeout - please try again"}
     else:

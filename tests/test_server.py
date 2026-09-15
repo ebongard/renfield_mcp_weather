@@ -368,3 +368,87 @@ async def test_api_error_handling():
 
         assert "error" in result
         assert "500" in result["error"]
+
+
+# === Upstream throttle (HTTP 429) ===
+#
+# A throttled Open-Meteo used to come back as {"error": "Weather API error: 429"} —
+# prose Renfield's MCP rate-limit classifier deliberately does not read (a bare
+# "429" may be an invoice number or a postcode). The contract is structured
+# instead: "status": 429 plus "retry_after" in seconds when the upstream sent one.
+
+_BERLIN = {
+    "results": [{
+        "latitude": 52.52,
+        "longitude": 13.405,
+        "name": "Berlin",
+        "country": "Germany",
+        "timezone": "Europe/Berlin",
+    }]
+}
+
+
+def _mock_forecast(response):
+    respx.get("https://geocoding-api.open-meteo.com/v1/search").mock(
+        return_value=Response(200, json=_BERLIN)
+    )
+    respx.get("https://api.open-meteo.com/v1/forecast").mock(return_value=response)
+
+
+@pytest.mark.asyncio
+async def test_api_throttle_is_a_structured_error_with_retry_after():
+    with respx.mock:
+        _mock_forecast(Response(429, headers={"Retry-After": "30"}))
+        result = await get_weather("Berlin")
+
+    assert result["status"] == 429
+    assert result["retry_after"] == 30
+    assert "429" in result["error"]
+
+
+@pytest.mark.asyncio
+async def test_api_throttle_without_retry_after_carries_no_guess():
+    with respx.mock:
+        _mock_forecast(Response(429))
+        result = await get_weather("Berlin")
+
+    assert result["status"] == 429
+    assert "retry_after" not in result
+
+
+@pytest.mark.asyncio
+async def test_api_throttle_http_date_retry_after_is_not_guessed():
+    # The HTTP-date form would need clock arithmetic across skew; omitted, not guessed.
+    with respx.mock:
+        _mock_forecast(Response(429, headers={"Retry-After": "Wed, 21 Oct 2026 07:28:00 GMT"}))
+        result = await get_weather("Berlin")
+
+    assert result["status"] == 429
+    assert "retry_after" not in result
+
+
+@pytest.mark.asyncio
+async def test_other_http_errors_keep_their_envelope():
+    with respx.mock:
+        _mock_forecast(Response(500, json={"error": "Internal Server Error"}))
+        result = await get_weather("Berlin")
+
+    assert result == {"error": "Weather API error: 500"}
+
+
+@pytest.mark.asyncio
+async def test_throttle_reaches_the_mcp_wire_as_structured_json():
+    """What Renfield's client actually reads is the tool's TEXT content, parsed as JSON."""
+    import json
+
+    from renfield_mcp_weather.server import mcp
+
+    with respx.mock:
+        _mock_forecast(Response(429, headers={"Retry-After": "12"}))
+        result = await mcp.call_tool("get_weather", {"location": "Berlin"})
+
+    # FastMCP returns (content, structured) or just the content, by output schema.
+    content = result[0] if isinstance(result, tuple) else result
+    payload = json.loads(content[0].text)
+    assert payload["status"] == 429
+    assert payload["retry_after"] == 12
