@@ -156,6 +156,26 @@ Responses are compact and LLM-friendly:
 }
 ```
 
+### Errors
+
+Errors are returned as a result with an `error` key (not as a raised tool error):
+
+```json
+{"error": "Weather API error: 500"}
+{"error": "Weather API timeout - please try again"}
+```
+
+An upstream **throttle (HTTP 429)** is structured so a client can recognise it
+without reading prose, and back off for as long as the upstream asked:
+
+```json
+{"error": "Weather API rate limit (HTTP 429)", "status": 429, "retry_after": 30}
+```
+
+`retry_after` (seconds) is present only when Open-Meteo sent a numeric
+`Retry-After` header; the HTTP-date form is omitted rather than guessed. A bare
+"429" in a message is deliberately not the signal — it could be a postcode.
+
 ## Configuration
 
 All configuration is externalized in JSON files - no code changes required.
